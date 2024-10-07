@@ -1,195 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <title>神経衰弱ゲーム</title>
-    <style>
-        body {
-            background-color:#8FBC8F;
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            
-        }
-        h1 {
-            text-align: center; /* 中央揃え */
-            font-size: 40px; /* フォントサイズ */
-            color: black; /* 文字色 */
-        }
-        
-        /* h2タグのスタイル */
-        h2 {
-            text-align: center; /* 中央揃え */
-            font-size: 30px; /* フォントサイズ */
-            color: black; /* 文字色 */
-        }
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-gap: 40px;
-            width: fit-content;
-            margin: auto;
-        }
-        .card {
-            position: relative;
-            width: 120px;
-            height: 170px;
-            cursor: pointer;
-            background-size: cover;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4em;
-        }
-        .hidden {
-            visibility: hidden;/*要素はあるけど見えない*/
-        }
-        .matched .number {
-            color: red;
-        }
-        .number {
-            position: absolute;
-            z-index: 1;
-        }
-        button {
-            width: 100%;
-            max-width: 320px;
-            height: 64px;
-            padding: 8px 24px;
-            font-family: sans-serif;
-            font-size: 20px;
-            color: #5c73b7;
-            border: none; /* 枠線の色をなしに設定 */
-            text-align: center;
-            overflow-wrap: anywhere;
-            background-color: #fff56c;
-            border-radius: 32px; /* (buttonの高さ / 2) の値 */
-            margin-bottom: 16px; /* ボタンの下に少し余白をつける */
-            font-weight: bold;
+  <meta charset="UTF-8">
+  <title>神経衰弱</title>
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   
-        }
-        #clearMessage {
-            display: none; /* 初期状態では非表示 */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: lightgreen;
-            font-size: 2em;
-            text-align: center;
-            border-radius: 10px;
-            z-index: 2;
-        }
-        
-    </style>
+  <style>
+    .flipped {
+      cursor: default;
+    }
+  </style>
 </head>
 <body>
-    <h1>神経衰弱ゲーム</h1>
-    <h2>1～9までの数字をそろえよう！</h2>
-    <div class="card-grid" id="cardGrid"></div>
-    <div id="clearMessage">クリア!!</div>
+  <a-scene cursor="rayOrigin: mouse">
+ 
+    <!-- カメラ -->
+    <a-entity camera look-controls position="0 5 3"></a-entity>
 
-    <button id="reset">カードシャッフル</button>
-    <script>
-        const music = new Audio('GB-Action-D10-1(Clear).mp3');
-        const music2 = new Audio('カードめくり1.mp3');
-        const music3 = new Audio('Quiz-Correct_Answer01-1.mp3');
+    <!-- 背景 -->
+    <a-entity environment="preset: default;"></a-entity>
 
-        $(function(){
-            let totalCards = 18; // 合計カード数18枚
-            let cards = []; // カードの配列
-            let card1 = Array.from({length: totalCards / 2}, function(_, i) {
-                return i + 1;
-            }); // カード1〜9を生成
-            let card2 = [...card1]; // card1コピー　ペア作成
+    <!-- カードのグリッドを配置するエンティティ -->
+    <a-entity id="card-grid" position="-5.5 2.3 -7" rotation="-90 0 0" material="side: double"></a-entity>
 
-            cards = card1.concat(card2); // カードを結合してペアを作る
+    <!-- 部屋の壁 -->
+    <a-box position="0 2 -40" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box> <!-- 前の壁 -->
+    <a-box position="0 2 15" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box> <!-- 後ろの壁 -->
+    <a-box position="-30 2 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box> <!-- 左の壁 -->
+    <a-box position="30 10 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box> <!-- 右の壁 -->
+    <a-box position="0 30 0" width="80" height="0.1" depth="80" color="#C0C0C0"></a-box> <!-- 天井 -->
 
-            // Durstenfeld Shuffle
-            function durstenfeldShuffle(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
+    <!-- テーブルの天板 -->
+    <a-box position="0 2 -8" depth="0.4" width="20" height="15" rotation="90 0 0" color="#C0C0C0" ></a-box>
 
-            // カード配列をシャッフル
-            cards = durstenfeldShuffle(cards);
+    <!-- テーブルの脚 -->
+    <a-box position="-9 1 -15" depth="0.4" width="0.4" height="2.3" color="#8B4513"></a-box>
+    <a-box position="9 1 -15" depth="0.4" width="0.4" height="2.3" color="#8B4513"></a-box>
+    <a-box position="-9 1 -1" depth="0.4" width="0.4" height="2.3" color="#8B4513"></a-box>
+    <a-box position="9 1 -1" depth="0.4" width="0.4" height="2.3" color="#8B4513"></a-box>
 
-            // カードを生成してカードグリッドに追加
-            for (let i = 0; i < totalCards; i++) {
-                let cardId = `card_${i}`;
-                $("#cardGrid").append(`<div class="card" id="${cardId}" data-card-value="${cards[i]}" style="background-image: url('card_back.png');"><span class="number hidden">${cards[i]}</span></div>`);
-            }
-
-            let firstCard = null;
-            let secondCard = null;
-            let matches = 0;
-            //let time = 60; // 初期設定：60秒
-            //let interval;
-
-            // カードクリックイベント
-            $(".card").click(function() {
-    if ($(this).hasClass('hidden') || $(this).hasClass('matched')) return;
-    if (firstCard && secondCard) return; // すでに2枚選ばれている場合は無視
-    if (firstCard && $(this).is(firstCard)) return; // 同じカードを2回クリックできないようにする
-    music2.play();
-    $(this).css('background-image', 'url(card_front.png)');//背景　カード表
-    $(this).find('.number').removeClass('hidden');//hiddenのクラスを消去
     
-    if (!firstCard) {
-        firstCard = $(this);
-    } else {
-        secondCard = $(this);
+    <!-- スタートボタン -->
+    <a-entity id="start-button" position="0 6 0" depth="0.4" width="2" height="1" color="red"
+      geometry="primitive: plane; width: 2"
+      material="color: #EF2D5E"
+      scale="2 2 1"
+      text="color: white; align: center; 
+            font: dejavu;
+            value: START;
+            width: 4;  /* Adjust the width for larger text */
+            anchor: center;">
+    </a-entity>
+    
+    <!-- 音楽 -->
+    <a-sound id="background-music" src="https://cdn.glitch.global/175784f0-0279-49dd-85d9-0090f09e4bc8/%E6%B1%BA%E5%AE%9A%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E6%8A%BC%E3%81%9939.mp3?v=1721560077531" autoplay="false" loop="false" position="0 2 -10" volume="30"></a-sound>
+    <a-sound id="cheer-sound" src="https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/Cheer-Yay01-1(High-Solo).mp3?v=1721550208187" autoplay="false" position="0 2 -10" volume="30"></a-sound>
+    <a-sound id="click-sound" src="https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/click-sound.mp3" autoplay="false" position="0 2 -10" volume="0.5"></a-sound>
 
-        if (firstCard.data('card-value') === secondCard.data('card-value')) {//1枚目と２枚目同じとき
-            firstCard.addClass('matched');
-            secondCard.addClass('matched');
-            //firstCard.find('.number');//css('color', 'red'
-            //secondCard.find('.number');
-            matches += 1;
-            setTimeout(() => {
-                music3.play(); // 数字がマッチした時0.4秒語music3を再生
-            }, 400);
-            
-            if (matches === totalCards / 2) {//カードがすべてマッチしたとき
-                $("#clearMessage").show(); //クリア表示
-                setTimeout(() => {
-                music.play(); // 数字がマッチしたとき0.6秒後music3を再生
-            }, 600);
-            }
-            firstCard = null;
-            secondCard = null;
-        } else {
-            //music2.play();
-            setTimeout(() => {
-                firstCard.css('background-image', 'url(card_back.png)');//背景をカードbackに変更
-                secondCard.css('background-image', 'url(card_back.png)');
-                firstCard.find('.number').addClass('hidden');//.css('color', 'black')
-                secondCard.find('.number').addClass('hidden');//数字隠す
-                firstCard = null;
-                secondCard = null;
-            }, 1000);//1秒後にカード裏返し
+    <!-- ゲームクリア時に変更される画像 -->
+    <a-image id="game-image" src="https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/00809319-69BC-4BF9-9129-44B2097AADC5%202.jpg?v=1721564809857" position="0 4 -10" width="10" height="5" visible="false"></a-image>
+    
+    <a-entity id="ctlR" laser-controls="hand: right" raycaster="lineColor: red;"></a-entity>
+
+  </a-scene>
+
+  <script>
+    $(document).ready(function() {
+      var colors = ['#FFFF00', '#009900', '#FF33FF', '#3300FF'];
+      var openedCards = [];
+      var matchedPairs = 0;
+      var isMusicPlaying = false;  // 音楽が再生中かどうかを示す変数
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
         }
-    }
-});
+        return array;
+      }
 
-            // リセットボタンの動作
-            $("#reset").click(function() {
-                location.reload();
-            });
+      function initializeGame() {
+        $('#card-grid').empty();
+        openedCards = [];
+        matchedPairs = 0;
+        var shuffledColors = shuffle(colors.concat(colors)); // 4色のペアで18枚
 
-           
+        for (let i = 0; i < 8; i++) {
+          let card = document.createElement('a-plane');
+          card.setAttribute('class', 'card');
+          card.setAttribute('position', `${(i % 4) * 2.2 + 2.2} ${Math.floor(i / 4) * -2 - 1} 0`);
+          card.setAttribute('width', '1');
+          card.setAttribute('height', '1.5');
+          card.setAttribute('material', 'color: black');
+          card.setAttribute('shadow', '');
+          card.setAttribute('data-color', shuffledColors[i]);
+          card.setAttribute('cursor-listener', '');
+          document.querySelector('#card-grid').appendChild(card);
+        }
 
-        });
-    </script>
+        // 画像を非表示に設定
+        var gameImage = document.querySelector('#game-image');
+        gameImage.setAttribute('visible', 'false');
+        
+        // スタートボタンのテキストを「START」に変更
+        $('#start-button').attr('text', 'value: START');
+      }
+
+      AFRAME.registerComponent('cursor-listener', {
+        init: function () {
+          this.el.addEventListener('click', function () {
+            if ($(this).hasClass('flipped') || openedCards.length >= 2) {
+              return;
+            }
+
+            var currentColor = $(this).attr('data-color');
+            $(this).attr('material', `color: ${currentColor}`);
+            $(this).addClass('flipped');
+            openedCards.push($(this));
+
+            if (openedCards.length === 2) {
+              setTimeout(checkMatch, 1000);
+            }
+          });
+        }
+      });
+
+      function checkMatch() {
+        var card1 = openedCards[0];
+        var card2 = openedCards[1];
+
+        if (card1.attr('data-color') === card2.attr('data-color')) {
+          matchedPairs++;
+          if (matchedPairs === colors.length) {
+            var gameImage = document.querySelector('#game-image');
+            gameImage.setAttribute('src', 'https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/6949F596-256B-4E38-A281-D73A47F6C611.jpg?v=1721565101239');
+            gameImage.setAttribute('visible', 'true');
+            var backgroundMusic = document.querySelector('#background-music');
+            backgroundMusic.components.sound.stopSound();
+            var cheerSound = document.querySelector('#cheer-sound');
+            cheerSound.components.sound.playSound();
+            
+            // スタートボタンのテキストを「RESTART」に変更
+            $('#start-button').attr('text', 'value: RESTART');
+          }
+        } else {
+          card1.attr('material', 'color: black').removeClass('flipped');
+          card2.attr('material', 'color: black').removeClass('flipped');
+        }
+        openedCards = [];
+      }
+
+      // スタートボタンのクリックイベントリスナー
+      document.querySelector('#start-button').addEventListener('click', function () {
+        var clickSound = document.querySelector('#click-sound');
+        clickSound.components.sound.playSound();  // リスタート時に音声再生
+        
+        initializeGame();
+        
+       
+        // 音楽の再生
+        var backgroundMusic = document.querySelector('#background-music');
+        backgroundMusic.components.sound.stopSound(); // 音楽が再生中の場合は停止
+        backgroundMusic.components.sound.playSound(); // 音楽を再生
+        isMusicPlaying = true;  // 音楽が再生中に設定
+
+        // ゲーム開始時に画像を表示
+        var gameImage = document.querySelector('#game-image');
+        gameImage.setAttribute('src', 'https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/00809319-69BC-4BF9-9129-44B2097AADC5%202.jpg?v=1721564809857');
+        gameImage.setAttribute('visible', 'true');
+      });
+
+      initializeGame();
+    });
+  </script>
 </body>
 </html>
