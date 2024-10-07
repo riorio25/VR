@@ -17,7 +17,7 @@
   <a-scene cursor="rayOrigin: mouse">
  
     <!-- カメラ -->
-    <a-entity camera look-controls position="0 5 3"></a-entity>
+    <a-entity camera look-controls position="0 10 3"></a-entity>
 
     <!-- 背景 -->
     <a-entity environment="preset: default;"></a-entity>
@@ -56,11 +56,6 @@
     
     <a-entity id="ctlR" laser-controls="hand: right" raycaster="lineColor: red;"></a-entity>
 
-    <!-- タイマー表示 -->
-    <a-entity id="timer" text="value: 60; color: white; align: left; width: 6" position="0 6.5 0"></a-entity>
-
-    <a-entity id="ctlR" laser-controls="hand: right" raycaster="lineColor: red;"></a-entity>
-
   </a-scene>
 
   <script>
@@ -69,9 +64,6 @@
       var openedCards = [];
       var matchedPairs = 0;
       var isMusicPlaying = false;  // 音楽が再生中かどうかを示す変数
-      var timerInterval;  // タイマー用の変数
-      var timeRemaining = 60;  // 制限時間（秒）
-
 
       function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -85,10 +77,6 @@
         $('#card-grid').empty();
         openedCards = [];
         matchedPairs = 0;
-        timeRemaining = 60;  // タイマーをリセット
-        updateTimer();  // タイマー表示を更新
-        clearInterval(timerInterval);  // 前回のタイマーをクリア
-
         var shuffledColors = shuffle(colors.concat(colors)); // 4色のペアで18枚
 
         for (let i = 0; i < 8; i++) {
@@ -112,36 +100,6 @@
         $('#start-button').attr('text', 'value: START');
       }
 
-      // タイマーをスタート
-        timerInterval = setInterval(function() {
-          timeRemaining--;
-          updateTimer();
-
-          if (timeRemaining <= 0) {
-            clearInterval(timerInterval);
-            gameOver();  // 時間切れ時の処理
-          }
-        }, 1000);
-      }
-
-      function updateTimer() {
-        // タイマー表示を更新
-        document.querySelector('#timer').setAttribute('text', `value: ${timeRemaining}`);
-      }
-
-      function gameOver() {
-        // 時間切れ時の処理
-        var gameImage = document.querySelector('#game-image');
-        gameImage.setAttribute('src', 'https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/gameover.jpg?v=1721565101239');
-        gameImage.setAttribute('visible', 'true');
-
-        var backgroundMusic = document.querySelector('#background-music');
-        backgroundMusic.components.sound.stopSound();
-        
-        // スタートボタンのテキストを「RESTART」に変更
-        $('#start-button').attr('text', 'value: RESTART');
-      }
-    
       AFRAME.registerComponent('cursor-listener', {
         init: function () {
           this.el.addEventListener('click', function () {
