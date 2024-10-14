@@ -26,11 +26,14 @@
     <a-entity id="card-grid" position="-5.5 5 -5" rotation="0 0 0" material="side: double"></a-entity>
 
     <!-- 部屋の壁 -->
-    <a-box position="0 2 -40" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box> <!-- 前の壁 -->
-    <a-box position="0 2 15" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box> <!-- 後ろの壁 -->
-    <a-box position="-30 2 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box> <!-- 左の壁 -->
-    <a-box position="30 10 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box> <!-- 右の壁 -->
-    <a-box position="0 30 0" width="80" height="0.1" depth="80" color="#C0C0C0"></a-box> <!-- 天井 -->
+    <a-box position="0 2 -40" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box>
+    <a-box position="0 2 15" width="80" height="80" depth="0.1" color="#C0C0C0"></a-box>
+    <a-box position="-30 2 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box>
+    <a-box position="30 10 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box>
+    <a-box position="0 30 0" width="80" height="0.1" depth="80" color="#C0C0C0"></a-box>
+
+    <!-- カードのスポットライト -->
+    <a-light type="spot" position="-5.5 5 -4" angle="30" intensity="1" target="#card-grid"></a-light>
 
     <!-- 音楽 -->
     <a-sound id="background-music" src="https://cdn.glitch.global/175784f0-0279-49dd-85d9-0090f09e4bc8/%E6%B1%BA%E5%AE%9A%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E6%8A%BC%E3%81%9939.mp3?v=1721560077531" autoplay="false" loop="false" position="0 2 -10" volume="30"></a-sound>
@@ -49,7 +52,6 @@
       var colors = ['#A883F4', '#7DF5D4', '#F59A7F', '#F5EE7F'];
       var openedCards = [];
       var matchedPairs = 0;
-      var isMusicPlaying = false;  // 音楽が再生中かどうかを示す変数
 
       function shuffle(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -63,7 +65,7 @@
         $('#card-grid').empty();
         openedCards = [];
         matchedPairs = 0;
-        var shuffledColors = shuffle(colors.concat(colors)); // 4色のペアで18枚
+        var shuffledColors = shuffle(colors.concat(colors));
 
         for (let i = 0; i < 8; i++) {
           let card = document.createElement('a-plane');
@@ -71,7 +73,7 @@
           card.setAttribute('position', `${(i % 4) * 2.2 + 2.2} ${Math.floor(i / 4) * -2 - 1} 0`);
           card.setAttribute('width', '1');
           card.setAttribute('height', '1.5');
-          card.setAttribute('material', 'color: black');
+          card.setAttribute('material', 'color: black; shader: flat;');
           card.setAttribute('shadow', '');
           card.setAttribute('data-color', shuffledColors[i]);
           card.setAttribute('cursor-listener', '');
@@ -86,14 +88,14 @@
       AFRAME.registerComponent('cursor-listener', {
         init: function () {
           this.el.addEventListener('click', function () {
-            if ($(this).hasClass('flipped') || openedCards.length >= 2) {
+            if (this.classList.contains('flipped') || openedCards.length >= 2) {
               return;
             }
 
-            var currentColor = $(this).attr('data-color');
-            $(this).attr('material', `color: ${currentColor}`);
-            $(this).addClass('flipped');
-            openedCards.push($(this));
+            var currentColor = this.getAttribute('data-color');
+            this.setAttribute('material', `color: ${currentColor}`);
+            this.classList.add('flipped');
+            openedCards.push(this);
 
             if (openedCards.length === 2) {
               setTimeout(checkMatch, 1000);
@@ -106,7 +108,7 @@
         var card1 = openedCards[0];
         var card2 = openedCards[1];
 
-        if (card1.attr('data-color') === card2.attr('data-color')) {
+        if (card1.getAttribute('data-color') === card2.getAttribute('data-color')) {
           matchedPairs++;
           if (matchedPairs === colors.length) {
             var gameImage = document.querySelector('#game-image');
@@ -118,8 +120,10 @@
             cheerSound.components.sound.playSound();
           }
         } else {
-          card1.attr('material', 'color: black').removeClass('flipped');
-          card2.attr('material', 'color: black').removeClass('flipped');
+          card1.setAttribute('material', 'color: black');
+          card2.setAttribute('material', 'color: black');
+          card1.classList.remove('flipped');
+          card2.classList.remove('flipped');
         }
         openedCards = [];
       }
