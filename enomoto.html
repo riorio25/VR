@@ -32,20 +32,6 @@
     <a-box position="30 10 -12" width="0.1" height="80" depth="60" color="#C0C0C0"></a-box> <!-- 右の壁 -->
     <a-box position="0 30 0" width="80" height="0.1" depth="80" color="#C0C0C0"></a-box> <!-- 天井 -->
 
-    
-    
-    <!-- スタートボタン -->
-    <a-entity id="start-button" position="0 6 0" depth="0.4" width="2" height="1" color="red"
-      geometry="primitive: plane; width: 2"
-      material="color: #EF2D5E"
-      scale="2 2 1"
-      text="color: white; align: center; 
-            font: dejavu;
-            value: START;
-            width: 4;  /* Adjust the width for larger text */
-            anchor: center;">
-    </a-entity>
-    
     <!-- 音楽 -->
     <a-sound id="background-music" src="https://cdn.glitch.global/175784f0-0279-49dd-85d9-0090f09e4bc8/%E6%B1%BA%E5%AE%9A%E3%83%9C%E3%82%BF%E3%83%B3%E3%82%92%E6%8A%BC%E3%81%9939.mp3?v=1721560077531" autoplay="false" loop="false" position="0 2 -10" volume="30"></a-sound>
     <a-sound id="cheer-sound" src="https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/Cheer-Yay01-1(High-Solo).mp3?v=1721550208187" autoplay="false" position="0 2 -10" volume="30"></a-sound>
@@ -95,9 +81,6 @@
         // 画像を非表示に設定
         var gameImage = document.querySelector('#game-image');
         gameImage.setAttribute('visible', 'false');
-        
-        // スタートボタンのテキストを「START」に変更
-        $('#start-button').attr('text', 'value: START');
       }
 
       AFRAME.registerComponent('cursor-listener', {
@@ -133,9 +116,6 @@
             backgroundMusic.components.sound.stopSound();
             var cheerSound = document.querySelector('#cheer-sound');
             cheerSound.components.sound.playSound();
-            
-            // スタートボタンのテキストを「RESTART」に変更
-            $('#start-button').attr('text', 'value: RESTART');
           }
         } else {
           card1.attr('material', 'color: black').removeClass('flipped');
@@ -143,26 +123,6 @@
         }
         openedCards = [];
       }
-
-      // スタートボタンのクリックイベントリスナー
-      document.querySelector('#start-button').addEventListener('click', function () {
-        var clickSound = document.querySelector('#click-sound');
-        clickSound.components.sound.playSound();  // リスタート時に音声再生
-        
-        initializeGame();
-        
-       
-        // 音楽の再生
-        var backgroundMusic = document.querySelector('#background-music');
-        backgroundMusic.components.sound.stopSound(); // 音楽が再生中の場合は停止
-        backgroundMusic.components.sound.playSound(); // 音楽を再生
-        isMusicPlaying = true;  // 音楽が再生中に設定
-
-        // ゲーム開始時に画像を表示
-        var gameImage = document.querySelector('#game-image');
-        gameImage.setAttribute('src', 'https://cdn.glitch.global/577634da-d9f3-4179-bbc4-f1f235168926/00809319-69BC-4BF9-9129-44B2097AADC5%202.jpg?v=1721564809857');
-        gameImage.setAttribute('visible', 'true');
-      });
 
       initializeGame();
     });
